@@ -50,3 +50,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#Other
+skel/checker
+skel/parsed_papers/
+skel/tests_in/
+skel/tests_ref/
+skel/checker.sh
+skel/cpplint.py
+skel/parson
