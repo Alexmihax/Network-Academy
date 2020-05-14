@@ -1,8 +1,12 @@
 #ifndef PUBLICATIONS_H_
 #define PUBLICATIONS_H_
 
+#include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+#define LMAX 100
 
 /**
  * If the assertion is true, the program is closed and the file and line number

@@ -1,16 +1,40 @@
 #include "publications.h"
 
 struct publications_data {
-    /* TODO: add whichever data you need here */
+    char* title;
+    char* venue;
+    int year;
+    char** author_names;
+    int64_t* author_ids;
+    char** institutions;
+    int num_authors;
+    char** fields;
+    int num_fields;
+    int64_t id;
+    int64_t* references;
+    int num_refs;
 };
 
 PublData* init_publ_data(void) {
-    /* TODO: implement init_publ_data */
-    return NULL;
+    PublData *data;
+    data = malloc(sizeof(PublData));
+    DIE(data = NULL, "heap malloc");
+    return data;
 }
 
 void destroy_publ_data(PublData* data) {
-    /* TODO: implement destroy_publ_data */
+    int i;
+    free(data->title);
+    free(data->venue);
+    for (i = 0; i < data->num_authors; i++) {
+        free(data->author_names);
+        free(data->institutions);
+    }
+    for (i = 0; i < data->num_fields; i++) {
+        free(data->fields);
+    }
+    free(data->references);
+    free(data);
 }
 
 void add_paper(PublData* data, const char* title, const char* venue,
@@ -18,7 +42,7 @@ void add_paper(PublData* data, const char* title, const char* venue,
     const char** institutions, const int num_authors, const char** fields,
     const int num_fields, const int64_t id, const int64_t* references,
     const int num_refs) {
-    /* TODO: implement add_paper */
+    
 }
 
 char* get_oldest_influence(PublData* data, const int64_t id_paper) {
