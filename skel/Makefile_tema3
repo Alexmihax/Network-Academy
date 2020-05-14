@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Wpedantic -m32
+CFLAGS=-Wall -Wextra -Wpedantic -m32 -g
 OPT_CFLGAS=-O3 -Wno-unused-result
 
 PARSER=parson
@@ -14,7 +14,7 @@ LIBS=-lm
 
 build: tema3
 
-tema3: main.o runner.o $(PARSER).o $(PUBL).o
+tema3: main.o runner.o $(PARSER).o publ.o
 	$(CC) $^ -o $@ -m32 $(LIBS)
 
 main.o: $(CHECKER)/main.c
@@ -26,8 +26,14 @@ $(RUNNER).o: $(CHECKER)/$(RUNNER).c $(CHECKER)/$(RUNNER).h
 $(PARSER).o: $(PARSER)/$(PARSER).c $(PARSER)/$(PARSER).h
 	$(CC) $(CFLAGS) $(OPT_CFLGAS) $^ -c
 
-$(PUBL).o: $(PUBL).c $(PUBL).h
-	make --no-print-directory build
+$(PUBL).o: $(PUBL).c $(PUBL).h 
+
+Hashtable.o: Hashtable.c Hashtable.h
+
+LinkedList.o: LinkedList.c LinkedList.h
+
+publ.o: $(PUBL).o LinkedList.o Hashtable.o
+	ld -m elf_i386 -r Hashtable.o LinkedList.o $(PUBL).o -o publ.o
 
 clean:
 	rm -f *.o tema3

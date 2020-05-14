@@ -1,40 +1,16 @@
 #include "publications.h"
-
-struct publications_data {
-    char* title;
-    char* venue;
-    int year;
-    char** author_names;
-    int64_t* author_ids;
-    char** institutions;
-    int num_authors;
-    char** fields;
-    int num_fields;
-    int64_t id;
-    int64_t* references;
-    int num_refs;
-};
+#include "Hashtable.h"
 
 PublData* init_publ_data(void) {
     PublData *data;
     data = malloc(sizeof(PublData));
-    DIE(data = NULL, "heap malloc");
+    DIE(data == NULL, "data malloc");
+    init_ht(data, HMAX, hash_function_int ,compare_function_ints);
     return data;
 }
 
 void destroy_publ_data(PublData* data) {
-    int i;
-    free(data->title);
-    free(data->venue);
-    for (i = 0; i < data->num_authors; i++) {
-        free(data->author_names);
-        free(data->institutions);
-    }
-    for (i = 0; i < data->num_fields; i++) {
-        free(data->fields);
-    }
-    free(data->references);
-    free(data);
+    free_ht(data);
 }
 
 void add_paper(PublData* data, const char* title, const char* venue,
@@ -42,7 +18,64 @@ void add_paper(PublData* data, const char* title, const char* venue,
     const char** institutions, const int num_authors, const char** fields,
     const int num_fields, const int64_t id, const int64_t* references,
     const int num_refs) {
-    
+    struct paper_data *info;
+    // info
+    info = malloc(sizeof(struct paper_data));
+    DIE(info == NULL, "info malloc");
+    int i;
+    // info->title
+    info->title = malloc(LMAX * sizeof(char));
+    DIE(info->title == NULL, "title malloc");
+    strcpy(info->title, title);
+    // info->venue
+    info->venue = malloc(LMAX * sizeof(char));
+    DIE(info->venue == NULL, "venue malloc");
+    strcpy(info->venue, venue);
+    // year
+    info->year = year;
+    info->num_authors = num_authors;
+    data->year_freq[year-1950]++;
+    // author_names
+    info->author_names = malloc(num_authors * sizeof(char *));
+    DIE(info->author_names == NULL, "authors malloc");
+    // author_ids
+    info->author_ids = malloc(num_authors * sizeof(int64_t));
+    DIE(info->author_ids == NULL, "author id malloc");
+    // institution
+    info->institutions = malloc(num_authors * sizeof(char *));
+    DIE(info->institutions == NULL, "institutions malloc"); 
+    for (i = 0; i < num_authors; i++) {
+        // author names
+        info->author_names[i] = malloc(LMAX * sizeof(char));
+        DIE(info->author_names[i] == NULL, "authors_names malloc");
+        strcpy(info->author_names[i], author_names[i]);
+        // authors_ids
+        info->author_ids[i] = author_ids[i];
+        // institutions
+        info->institutions[i] = malloc(LMAX * sizeof(char));
+        DIE(info->institutions[i] == NULL, "institutions malloc");
+        strcpy(info->institutions[i], institutions[i]);
+    }
+    // fields
+    info->num_fields = num_fields;
+    info->fields = malloc(num_fields * sizeof(char *));
+    DIE(info->fields == NULL, "fields malloc");
+    for (i = 0; i < num_fields; i++) {
+        info->fields[i] = malloc(LMAX * sizeof(char));
+        DIE(info->fields[i] == NULL, "fields malloc");
+        strcpy(info->fields[i], fields[i]);
+    }
+    // references
+    info->references = malloc(num_refs * sizeof(int64_t));
+    info->num_refs = num_refs;
+    DIE(info->references == NULL, "references malloc");
+    for (i = 0; i < num_refs; i++) {
+        info->references[i] = references[i];
+    }
+    info->id = id;
+
+    // Add to hashtable
+    put(data, &info->id, sizeof(int64_t), info);
 }
 
 char* get_oldest_influence(PublData* data, const int64_t id_paper) {
@@ -80,8 +113,12 @@ char** get_most_cited_papers_by_field(PublData* data, const char* field,
 int get_number_of_papers_between_dates(PublData* data, const int early_date,
     const int late_date) {
     /* TODO: implement get_number_of_papers_between_dates */
-
-    return 0;
+    int sum = 0, i;
+    for (i = early_date - 1950; i <= late_date - 1950; i++) {
+        sum += data->year_freq[i];
+        //  printf("%d\n", data->year_freq[i]);
+    }
+    return sum;
 }
 
 int get_number_of_authors_with_field(PublData* data, const char* institution,

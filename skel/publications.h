@@ -5,8 +5,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
-#define LMAX 100
+#define LMAX 500
+#define HMAX 10000
 
 /**
  * If the assertion is true, the program is closed and the file and line number
@@ -28,8 +30,7 @@
  * Define its fields in publications.c or any other file so that its fields
  * are transparent from outside the API.
  */
-struct publications_data;
-typedef struct publications_data PublData;
+typedef struct Hashtable PublData;
 
 /**
  * Initialises all the fields contained in the PublData structure.
