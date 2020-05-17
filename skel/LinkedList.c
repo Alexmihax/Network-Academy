@@ -1,3 +1,5 @@
+// Copyright 2020 Pasca Mihai; Nicolae Diana
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -125,7 +127,7 @@ void free_list(struct LinkedList **pp_list) {
         return;
     }
 
-    while(get_size(*pp_list) > 0) {
+    while (get_size(*pp_list) > 0) {
         currNode = remove_nth_node(*pp_list, 0);
         free(currNode);
     }
@@ -138,40 +140,20 @@ void free_list(struct LinkedList **pp_list) {
  * Atentie! Aceasta functie poate fi apelata doar pe liste ale caror noduri STIM ca stocheaza int-uri.
  * Functia afiseaza toate valorile int stocate in nodurile din lista inlantuita separate printr-un spatiu.
  */
-void print_int_linkedlist(struct LinkedList *list) {
-    /* TODO */
-    struct Node *curr;
+// void print_int_linkedlist(struct LinkedList *list) {
+//     /* TODO */
+//     struct Node *curr;
 
-    if (list == NULL) {
-        return;
-    }
+//     if (list == NULL) {
+//         return;
+//     }
 
-    curr = list->head;
-    while (curr != NULL) {
-        printf("%d ", *((int*)curr->data));
-        curr = curr->next;
-    }
+//     curr = list->head;
+//     while (curr != NULL) {
+//         printf("%d ", *curr->data);
+//         curr = curr->next;
+//     }
 
-    printf("\n");
-}
+//     printf("\n");
+// }
 
-/*
- * Atentie! Aceasta functie poate fi apelata doar pe liste ale caror noduri STIM ca stocheaza string-uri.
- * Functia afiseaza toate string-urile stocate in nodurile din lista inlantuita, separate printr-un spatiu.
- */
-void print_string_linkedlist(struct LinkedList *list) {
-    /* TODO */
-    struct Node *curr;
-
-    if (list == NULL) {
-        return;
-    }
-
-    curr = list->head;
-    while (curr != NULL) {
-        printf("%s ", (char*)curr->data);
-        curr = curr->next;
-    }
-
-    printf("\n");
-}

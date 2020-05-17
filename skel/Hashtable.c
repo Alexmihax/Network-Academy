@@ -1,7 +1,4 @@
-/*
- * Hashtable.c
- * Alexandru-Cosmin Mihai
- */
+// Copyright 2020 Pasca Mihai; Nicolae Diana
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,29 +7,10 @@
 #include "Hashtable.h"
 
 /*
- * Functii de comparare a cheilor:
- */
-int compare_function_ints(void *a, void *b) {
-    int int_a = *((int *)a);
-    int int_b = *((int *)b);
-
-    if (int_a == int_b) {
-        return 0;
-    } else if (int_a < int_b) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
-
-/*
  * Functii de hashing:
  */
-unsigned int hash_function_int(void *a) {
-    /*
-     * Credits: https://stackoverflow.com/a/12996028/7883884
-     */
-    unsigned int uint_a = *((unsigned int *)a);
+unsigned int hash_function_int(int64_t *a) {
+    int64_t uint_a = *a;
 
     uint_a = ((uint_a >> 16u) ^ uint_a) * 0x45d9f3b;
     uint_a = ((uint_a >> 16u) ^ uint_a) * 0x45d9f3b;
@@ -44,13 +22,13 @@ unsigned int hash_function_int(void *a) {
  * Functie apelata dupa alocarea unui hashtable pentru a-l initializa.
  * Trebuie alocate si initializate si listele inlantuite.
  */
-void init_ht(struct Hashtable *ht, int hmax, unsigned int (*hash_function)(void*), int (*compare_function)(void*, void*)) {
+void init_ht(struct Hashtable *ht, int hmax,
+            unsigned int (*hash_function)(void*)) {
     int i;
     ht -> buckets = malloc(hmax * sizeof(struct LinkedList));
     for (i = 0; i <= hmax - 1; i++) {
         init_list(&(ht -> buckets[i]));
     }
-    ht -> compare_function = compare_function;
     ht -> hash_function = hash_function;
     ht -> hmax = hmax;
     ht -> size = 0;
@@ -79,7 +57,7 @@ void put(struct Hashtable *ht, void *key, int key_size_bytes, void *value) {
     curr = ht -> buckets[index].head;
     while (curr != NULL) {
         inf = (struct info*)curr -> data;
-        if (ht -> compare_function(inf -> key, key) == 0) {
+        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
             inf -> value = value;
             return;
         }
@@ -87,21 +65,21 @@ void put(struct Hashtable *ht, void *key, int key_size_bytes, void *value) {
         i++;
     }
     newInfo = malloc(sizeof(struct info));
-    newInfo -> key = malloc(key_size_bytes);  
+    newInfo -> key = malloc(key_size_bytes);
     memcpy(newInfo -> key, key, key_size_bytes);
     newInfo -> value = value;
     add_nth_node(&ht -> buckets[index], i, newInfo);
-    ht -> size ++;
+    ht -> size++;
 }
 
-void* get(struct Hashtable *ht, void *key) {
-    unsigned int index = ht -> hash_function(key) % ht -> hmax;
+void* get(struct Hashtable *ht, const int64_t *key) {
+    unsigned int index = ht -> hash_function((int64_t *)key) % ht -> hmax;
     struct LinkedList bucket = ht -> buckets[index];
     struct Node *curr;
     curr = bucket.head;
     while (curr != NULL) {
         struct info *inf = (struct info*)curr -> data;
-        if (ht -> compare_function(inf -> key, key) == 0) {
+        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
             return inf -> value;
         }
         curr = curr -> next;
@@ -121,7 +99,7 @@ int has_key(struct Hashtable *ht, void *key) {
     curr = bucket.head;
     while (curr != NULL) {
         struct info *inf = (struct info*)curr -> data;
-        if (ht -> compare_function(inf -> key, key) == 0) {
+        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
             return 1;
         }
         curr = curr -> next;
@@ -143,12 +121,12 @@ void remove_ht_entry(struct Hashtable *ht, void *key) {
     curr = bucket.head;
     while (curr != NULL) {
         struct info *inf = (struct info*)curr -> data;
-        if (ht -> compare_function(inf -> key, key) == 0) {
+        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
             curr = remove_nth_node(&ht -> buckets[index], i);
             free(inf -> key);
             free(curr -> data);
             free(curr);
-            ht -> size --;
+            ht -> size--;
             return;
         }
         curr = curr -> next;
@@ -167,7 +145,7 @@ void free_ht(struct Hashtable *ht) {
         return;
     }
     for (i = 0; i < ht -> hmax; i++) {
-        while(ht -> buckets[i].head != NULL) {
+        while (ht -> buckets[i].head != NULL) {
             currNode = remove_nth_node(&ht -> buckets[i], 0);
             struct info *inf = (struct info*)currNode -> data;
             struct paper_data *paper_data = inf->value;

@@ -1,3 +1,4 @@
+// Copyright 2020 Pasca Mihai; Nicolae Diana
 #include "publications.h"
 #include "Hashtable.h"
 
@@ -5,7 +6,7 @@ PublData* init_publ_data(void) {
     PublData *data;
     data = malloc(sizeof(PublData));
     DIE(data == NULL, "data malloc");
-    init_ht(data, HMAX, hash_function_int ,compare_function_ints);
+    init_ht(data, HMAX, hash_function_int);
     return data;
 }
 
@@ -26,11 +27,11 @@ void add_paper(PublData* data, const char* title, const char* venue,
     // info->title
     info->title = malloc(LMAX * sizeof(char));
     DIE(info->title == NULL, "title malloc");
-    strcpy(info->title, title);
+    snprintf(info->title, LMAX, "%s", title);
     // info->venue
     info->venue = malloc(LMAX * sizeof(char));
     DIE(info->venue == NULL, "venue malloc");
-    strcpy(info->venue, venue);
+    snprintf(info->venue, LMAX, "%s", venue);
     // year
     info->year = year;
     info->num_authors = num_authors;
@@ -43,18 +44,18 @@ void add_paper(PublData* data, const char* title, const char* venue,
     DIE(info->author_ids == NULL, "author id malloc");
     // institution
     info->institutions = malloc(num_authors * sizeof(char *));
-    DIE(info->institutions == NULL, "institutions malloc"); 
+    DIE(info->institutions == NULL, "institutions malloc");
     for (i = 0; i < num_authors; i++) {
         // author names
         info->author_names[i] = malloc(LMAX * sizeof(char));
         DIE(info->author_names[i] == NULL, "authors_names malloc");
-        strcpy(info->author_names[i], author_names[i]);
+        snprintf(info->author_names[i], LMAX, "%s", author_names[i]);
         // authors_ids
         info->author_ids[i] = author_ids[i];
         // institutions
         info->institutions[i] = malloc(LMAX * sizeof(char));
         DIE(info->institutions[i] == NULL, "institutions malloc");
-        strcpy(info->institutions[i], institutions[i]);
+        snprintf(info->institutions[i], LMAX, "%s", institutions[i]);
     }
     // fields
     info->num_fields = num_fields;
@@ -63,7 +64,7 @@ void add_paper(PublData* data, const char* title, const char* venue,
     for (i = 0; i < num_fields; i++) {
         info->fields[i] = malloc(LMAX * sizeof(char));
         DIE(info->fields[i] == NULL, "fields malloc");
-        strcpy(info->fields[i], fields[i]);
+        snprintf(info->fields[i], LMAX, "%s", fields[i]);
     }
     // references
     info->references = malloc(num_refs * sizeof(int64_t));
@@ -71,17 +72,103 @@ void add_paper(PublData* data, const char* title, const char* venue,
     DIE(info->references == NULL, "references malloc");
     for (i = 0; i < num_refs; i++) {
         info->references[i] = references[i];
+        struct paper_data *ref = get(data, &references[i]);
+        if (ref && ref->verified == 1) {
+            ref->num_cits++;
+        }
     }
     info->id = id;
-
+    info->verified = 0;
+    // info->num_cits = cit_number(data, info);
     // Add to hashtable
     put(data, &info->id, sizeof(int64_t), info);
 }
 
+int cit_number(PublData *data, struct paper_data* paper) {
+    int a, i, nr_cit = 0;
+    for (a = 0; a < HMAX; a++) {
+        struct Node *curr = data->buckets[a].head;
+        while (curr) {
+            struct info *info_cit = curr->data;
+            struct paper_data *data_cit = info_cit->value;
+            if (paper->year > data_cit->year) {
+                curr = curr -> next;
+                continue;
+            }
+            for (i = 0; i < data_cit->num_refs; i++) {
+                if (data_cit->references[i] == paper->id){
+                    nr_cit++;
+                    break;
+                }
+            }
+            curr = curr->next;
+        }
+    }
+    return nr_cit;
+}
+
+void* get_oldest(PublData*data, const int64_t id_paper, int* ok, struct paper_data *oldest, int* verified) {
+    int i;
+    struct paper_data *paper_data = get(data, &id_paper);
+    if (paper_data == NULL)
+        return;
+    if (oldest->year >= paper_data->year) {
+        if (oldest->year == paper_data->year) {
+            if (!oldest->verified) {
+                oldest->num_cits = cit_number(data, oldest);
+                oldest->verified = 1;
+            }
+            if(!paper_data->verified) {
+                paper_data->num_cits = cit_number(data, paper_data);
+                paper_data->verified = 1;
+            }
+            if(oldest->num_cits <= paper_data->num_cits) { 
+                if (oldest->num_cits == paper_data->num_cits) {
+                    if(oldest->id > paper_data->id) {
+                        *ok = *ok + 1;
+                        *oldest = *paper_data;
+                    }
+                } else {
+                *ok = *ok + 1;
+                *oldest = *paper_data;
+                }
+            }
+        } else {
+            *ok = *ok + 1;
+            *oldest = *paper_data;
+        }
+    }
+    for (i = 0; i < paper_data->num_refs; i++) {
+        for (int j = 0; j < 10000; j++)
+            if (verified[j] == paper_data->references[i]) {
+                break;
+            }
+            else if(verified[j] == 0){
+                verified[j] = paper_data->id;
+                get_oldest(data, paper_data->references[i], ok, oldest, verified);
+                break;
+            }
+    }
+}
+
 char* get_oldest_influence(PublData* data, const int64_t id_paper) {
     /* TODO: implement get_oldest_influence */
-
-    return NULL;
+    int i;
+    int ok = 0;
+    struct paper_data oldest;
+    oldest.year = 2021;
+    int64_t *verified;
+    verified = calloc(10000, sizeof(int));
+    verified[0] = id_paper;
+    struct paper_data *paper_data = get(data, &id_paper);
+    for (i = 0; i < paper_data->num_refs; i++) {
+        get_oldest(data, paper_data->references[i], &ok, &oldest, verified);
+    }
+    free(verified);
+    if (ok > 0)
+        return oldest.title;
+    else
+        return "None";
 }
 
 float get_venue_impact_factor(PublData* data, const char* venue) {
@@ -93,7 +180,6 @@ float get_venue_impact_factor(PublData* data, const char* venue) {
 int get_number_of_influenced_papers(PublData* data, const int64_t id_paper,
     const int distance) {
     /* TODO: implement get_number_of_influenced_papers */
-
     return -1;
 }
 

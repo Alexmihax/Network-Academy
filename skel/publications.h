@@ -1,3 +1,5 @@
+// Copyright 2020 Pasca Mihai; Nicolae Diana
+
 #ifndef PUBLICATIONS_H_
 #define PUBLICATIONS_H_
 
@@ -8,7 +10,7 @@
 #include <string.h>
 
 #define LMAX 500
-#define HMAX 10000
+#define HMAX 100000
 
 /**
  * If the assertion is true, the program is closed and the file and line number

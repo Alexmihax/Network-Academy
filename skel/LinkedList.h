@@ -1,8 +1,10 @@
+// Copyright 2020 Pasca Mihai; Nicolae Diana
+
 #ifndef __LINKEDLIST_H__
 #define __LINKEDLIST_H__
 
 struct Node {
-    void *data; /* Pentru ca datele stocate sa poata avea orice tip, folosim un pointer la void. */
+    void *data;
     struct Node *next;
 };
 
@@ -26,9 +28,7 @@ int get_size(struct LinkedList *list);
 
 void free_list(struct LinkedList **list);
 
-void print_int_linkedlist(struct LinkedList *list);
-
-void print_string_linkedlist(struct LinkedList *list);
+// void print_int_linkedlist(struct LinkedList *list);
 
 #endif /* __LINKEDLIST_H__ */
 

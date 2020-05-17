@@ -1,7 +1,5 @@
-/*
- * Hashtable.h
- * Alexandru-Cosmin Mihai
- */
+// Copyright 2020 Pasca Mihai; Nicolae Diana
+
 #ifndef __HASHTABLE_H
 #define __HASHTABLE_H
 
@@ -28,7 +26,8 @@ struct paper_data {
     int64_t id;
     int64_t* references;
     int num_refs;
-    int num_cit;
+    int num_cits;
+    int verified;
 };
 
 struct Hashtable {
@@ -37,16 +36,16 @@ struct Hashtable {
     int hmax; /* Nr. de bucket-uri. */
     /* (Pointer la) Functie pentru a calcula valoarea hash asociata cheilor. */
     unsigned int (*hash_function)(void*);
-    /* (Pointer la) Functie pentru a compara doua chei. */
-    int (*compare_function)(void*, void*);
     int *year_freq;
 };
 
-void init_ht(struct Hashtable *ht, int hmax, unsigned int (*hash_function)(void*), int (*compare_function)(void*, void*));
+void init_ht(struct Hashtable *ht, int hmax,
+            unsigned int (*hash_function)(void*));
 
-void put(struct Hashtable *ht, void *key, int key_size_bytes, void *value);
+void put(struct Hashtable *ht, void *key,
+        int key_size_bytes, void *value);
 
-void* get(struct Hashtable *ht, void *key);
+void* get(struct Hashtable *ht, const int64_t *key);
 
 int has_key(struct Hashtable *ht, void *key);
 
@@ -59,17 +58,8 @@ int get_ht_hmax(struct Hashtable *ht);
 void free_ht(struct Hashtable *ht);
 
 /*
- * Functii de comparare a cheilor:
- */
-int compare_function_ints(void *a, void *b);
-
-int compare_function_strings(void *a, void *b);
-
-/*
  * Functii de hashing:
  */
-unsigned int hash_function_int(void *a);
-
-unsigned int hash_function_string(void *a);
+unsigned int hash_function_int(int64_t *a);
 
 #endif
