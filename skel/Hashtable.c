@@ -1,4 +1,4 @@
-// Copyright 2020 Pasca Mihai; Nicolae Diana
+/* Copyright 2020 Pasca Mihai; Nicolae Diana */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,18 +18,36 @@ unsigned int hash_function_int(int64_t *a) {
     return uint_a;
 }
 
+unsigned int hash_function_string(void *a) {
+    /*
+     * Credits: http://www.cse.yorku.ca/~oz/hash.html
+     */
+    unsigned char *puchar_a = (unsigned char*) a;
+    unsigned long hash = 5381;
+    int c;
+
+    while ((c = *puchar_a++))
+        hash = ((hash << 5u) + hash) + c; /* hash * 33 + c */
+
+    return hash;
+}
+
 /*
  * Functie apelata dupa alocarea unui hashtable pentru a-l initializa.
  * Trebuie alocate si initializate si listele inlantuite.
  */
-void init_ht(struct Hashtable *ht, int hmax,
-            unsigned int (*hash_function)(void*)) {
+void init_ht(struct Hashtable *ht, int hmax) {
     int i;
     ht -> buckets = malloc(hmax * sizeof(struct LinkedList));
-    for (i = 0; i <= hmax - 1; i++) {
+    ht -> venue = malloc(hmax * sizeof(struct LinkedList));
+    ht -> authors = malloc(hmax * sizeof(struct LinkedList));
+    ht -> field = malloc(hmax * sizeof(struct LinkedList));
+    for (i = 0; i < hmax; i++) {
         init_list(&(ht -> buckets[i]));
+        init_list(&(ht -> venue[i]));
+        init_list(&(ht -> authors[i]));
+        init_list(&(ht -> field[i]));
     }
-    ht -> hash_function = hash_function;
     ht -> hmax = hmax;
     ht -> size = 0;
     ht->year_freq = calloc(YEARS, sizeof(int));
@@ -48,38 +66,60 @@ void init_ht(struct Hashtable *ht, int hmax,
  * Nu ne dorim acest lucru, fiindca exista riscul sa ajungem in situatia in care nu mai stim la ce cheie este
  * inregistrata o anumita valoare.
  */
-void put(struct Hashtable *ht, void *key, int key_size_bytes, void *value) {
-    int index = ht -> hash_function(key) % ht -> hmax;
-    struct Node *curr;
+void put(struct Hashtable *ht, void *key, void *value, int key_size) {
+    unsigned int index = hash_function_int(key) % ht->hmax;
     struct info *newInfo;
-    struct info *inf;
-    int i = 0;
-    curr = ht -> buckets[index].head;
-    while (curr != NULL) {
-        inf = (struct info*)curr -> data;
-        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
-            inf -> value = value;
-            return;
-        }
-        curr = curr -> next;
-        i++;
-    }
     newInfo = malloc(sizeof(struct info));
-    newInfo -> key = malloc(key_size_bytes);
-    memcpy(newInfo -> key, key, key_size_bytes);
+    newInfo -> key = malloc(key_size);
+    memcpy(newInfo -> key, key, key_size);
     newInfo -> value = value;
-    add_nth_node(&ht -> buckets[index], i, newInfo);
+    add_nth_node(&ht -> buckets[index], ht->buckets[index].size, newInfo);
     ht -> size++;
 }
 
-void* get(struct Hashtable *ht, const int64_t *key) {
-    unsigned int index = ht -> hash_function((int64_t *)key) % ht -> hmax;
+void put_venue(struct Hashtable *ht, void *key, void *value, int key_size) {
+    unsigned int index = hash_function_string(key) % ht->hmax;
+    struct info *newInfo;
+    newInfo = malloc(sizeof(struct info));
+    newInfo -> key = malloc(key_size);
+    memcpy(newInfo -> key, key, key_size);
+    newInfo -> value = value;
+    add_nth_node(&ht -> venue[index], ht->venue[index].size, newInfo);
+    ht -> size++;
+}
+
+void put_field(struct Hashtable *ht, void *key, void *value, int key_size) {
+    unsigned int index = hash_function_string(key) % ht->hmax;
+    struct info *newInfo;
+    newInfo = malloc(sizeof(struct info));
+    newInfo -> key = malloc(key_size);
+    memcpy(newInfo -> key, key, key_size);
+    newInfo -> value = value;
+    add_nth_node(&ht -> field[index], ht->field[index].size, newInfo);
+    ht -> size++;
+}
+
+void put_authors(struct Hashtable *ht, void *key, void *value, int key_size) {
+    unsigned int index = hash_function_int(key) % ht->hmax;
+    struct info *newInfo;
+    newInfo = malloc(sizeof(struct info));
+    newInfo -> key = malloc(key_size);
+    memcpy(newInfo -> key, key, key_size);
+    newInfo -> value = value;
+    add_nth_node(&ht -> authors[index], ht->authors[index].size, newInfo);
+    ht -> size++;
+}
+
+
+void* get(struct Hashtable *ht, const int64_t *key, int key_size) {
+    unsigned int index = hash_function_int(key);
+    index = index % ht->hmax;
     struct LinkedList bucket = ht -> buckets[index];
     struct Node *curr;
     curr = bucket.head;
     while (curr != NULL) {
         struct info *inf = (struct info*)curr -> data;
-        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
+        if (memcmp(inf -> key, key, key_size) == 0) {
             return inf -> value;
         }
         curr = curr -> next;
@@ -93,8 +133,8 @@ void* get(struct Hashtable *ht, const int64_t *key) {
  * 0, altfel.
  */
 int has_key(struct Hashtable *ht, void *key) {
-    unsigned int index = ht -> hash_function(key) % ht -> hmax;
-    struct LinkedList bucket = ht -> buckets[index % ht -> hmax];
+    unsigned int index = hash_function_int(key) % ht->hmax;
+    struct LinkedList bucket = ht -> buckets[index % ht->hmax];
     struct Node *curr;
     curr = bucket.head;
     while (curr != NULL) {
@@ -114,8 +154,8 @@ int has_key(struct Hashtable *ht, void *key) {
  * lista inlantuita).
  */
 void remove_ht_entry(struct Hashtable *ht, void *key) {
-    unsigned int index = ht -> hash_function(key) % ht -> hmax;
-    struct LinkedList bucket = ht -> buckets[index % ht -> hmax];
+    unsigned int index = hash_function_int(key);
+    struct LinkedList bucket = ht -> buckets[index % ht->hmax];
     struct Node *curr;
     int i = 0;
     curr = bucket.head;
@@ -139,27 +179,27 @@ void remove_ht_entry(struct Hashtable *ht, void *key) {
  * pentru a stoca structura hashtable.
  */
 void free_ht(struct Hashtable *ht) {
-    int i;
+    int i, j;
     struct Node *currNode;
     if (ht == NULL || ht -> buckets == NULL) {
         return;
     }
-    for (i = 0; i < ht -> hmax; i++) {
+    for (i = 0; i < ht->hmax; i++) {
         while (ht -> buckets[i].head != NULL) {
             currNode = remove_nth_node(&ht -> buckets[i], 0);
             struct info *inf = (struct info*)currNode -> data;
             struct paper_data *paper_data = inf->value;
             free(paper_data->title);
             free(paper_data->venue);
-            for (i = 0; i < paper_data->num_authors; i++) {
-                free(paper_data->author_names[i]);
-                free(paper_data->institutions[i]);
+            for (j = 0; j < paper_data->num_authors; j++) {
+                free(paper_data->author_names[j]);
+                free(paper_data->institutions[j]);
             }
             free(paper_data->author_names);
             free(paper_data->author_ids);
             free(paper_data->institutions);
-            for (i = 0; i < paper_data->num_fields; i++) {
-                free(paper_data->fields[i]);
+            for (j = 0; j < paper_data->num_fields; j++) {
+                free(paper_data->fields[j]);
             }
             free(paper_data->fields);
             free(paper_data->references);
@@ -168,9 +208,34 @@ void free_ht(struct Hashtable *ht) {
             free(currNode -> data);
             free(currNode);
         }
+        while(ht->venue[i].head != NULL) {
+            currNode = remove_nth_node(&ht->venue[i], 0);
+            struct info *inf = (struct info*)currNode -> data;
+            free(inf->key);
+            free(currNode->data);
+            free(currNode);
+        }
+        while(ht->authors[i].head != NULL) {
+            currNode = remove_nth_node(&ht->authors[i], 0);
+            struct info *inf = (struct info*)currNode -> data;
+            free(inf->key);
+            free(currNode->data);
+            free(currNode);
+        }
+        while(ht->field[i].head != NULL) {
+            currNode = remove_nth_node(&ht->field[i], 0);
+            struct info *inf = (struct info*)currNode -> data;
+            free(inf->key);
+            free(currNode->data);
+            free(currNode);
+        }
     }
+    free(ht->field);
+    free(ht->authors);
     free(ht -> buckets);
-    ht -> buckets = NULL;
+    free(ht->venue);
+    ht->buckets = NULL;
+    ht->venue = NULL;
     free(ht->year_freq);
     free(ht);
     ht = NULL;

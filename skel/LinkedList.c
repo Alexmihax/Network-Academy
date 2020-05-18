@@ -1,5 +1,3 @@
-// Copyright 2020 Pasca Mihai; Nicolae Diana
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,8 +8,8 @@
  * (Setare valori initiale pentru campurile specifice structurii LinkedList).
  */
 void init_list(struct LinkedList *list) {
-    /* TODO */
     list->head = NULL;
+    list->tail = NULL;
     list->size = 0;
 }
 
@@ -21,38 +19,23 @@ void init_list(struct LinkedList *list) {
  * pe pozitia n=0). Daca n >= nr_noduri, noul nod se adauga la finalul listei.
  */
 void add_nth_node(struct LinkedList *list, int n, void *new_data) {
-    /* TODO */
     struct Node *prev, *curr;
     struct Node *new_node;
 
-    if (list == NULL) {
-        return;
-    }
-    /* n >= list->size inseamna adaugarea unui nou nod la finalul listei. */
-    if (n > list->size) {
-        n = list->size;
-    } else if (n < 0) {
-        return;
-    }
-
-    curr = list->head;
-    prev = NULL;
-    while (n > 0) {
-        prev = curr;
-        curr = curr->next;
-        --n;
-    }
-
     new_node = (struct Node*)malloc(sizeof(struct Node));
+    if (new_node == NULL) {
+        perror("Not enough memory to add element!");
+        return;
+    }
+
     new_node->data = new_data;
-    new_node->next = curr;
-    if (prev == NULL) {
-        /* Adica n == 0. */
+    new_node->next = NULL;
+    if (n == 0) {
         list->head = new_node;
     } else {
-        prev->next = new_node;
+    list->tail->next = new_node;
     }
-
+    list->tail = new_node;
     list->size++;
 }
 
@@ -64,7 +47,6 @@ void add_nth_node(struct LinkedList *list, int n, void *new_data) {
  * Este responsabilitatea apelantului sa elibereze memoria acestui nod.
  */
 struct Node* remove_nth_node(struct LinkedList *list, int n) {
-    /* TODO */
     struct Node *prev, *curr;
 
     if (list == NULL) {
@@ -95,10 +77,13 @@ struct Node* remove_nth_node(struct LinkedList *list, int n) {
         list->head = curr->next;
     } else {
         prev->next = curr->next;
+
+        if (prev->next == NULL) {
+            list->tail = prev;
+        }
     }
 
     list->size--;
-
     return curr;
 }
 
@@ -106,7 +91,6 @@ struct Node* remove_nth_node(struct LinkedList *list, int n) {
  * Functia intoarce numarul de noduri din lista al carei pointer este trimis ca parametru.
  */
 int get_size(struct LinkedList *list) {
-    /* TODO */
     if (list == NULL) {
         return -1;
     }
@@ -120,14 +104,13 @@ int get_size(struct LinkedList *list) {
  * pointer la un pointer).
  */
 void free_list(struct LinkedList **pp_list) {
-    /* TODO */
     struct Node *currNode;
 
     if (pp_list == NULL || *pp_list == NULL) {
         return;
     }
 
-    while (get_size(*pp_list) > 0) {
+    while(get_size(*pp_list) > 0) {
         currNode = remove_nth_node(*pp_list, 0);
         free(currNode);
     }
@@ -140,20 +123,38 @@ void free_list(struct LinkedList **pp_list) {
  * Atentie! Aceasta functie poate fi apelata doar pe liste ale caror noduri STIM ca stocheaza int-uri.
  * Functia afiseaza toate valorile int stocate in nodurile din lista inlantuita separate printr-un spatiu.
  */
-// void print_int_linkedlist(struct LinkedList *list) {
-//     /* TODO */
-//     struct Node *curr;
+void print_int_linkedlist(struct LinkedList *list) {
+    struct Node *curr;
 
-//     if (list == NULL) {
-//         return;
-//     }
+    if (list == NULL) {
+        return;
+    }
 
-//     curr = list->head;
-//     while (curr != NULL) {
-//         printf("%d ", *curr->data);
-//         curr = curr->next;
-//     }
+    curr = list->head;
+    while (curr != NULL) {
+        printf("%d ", *((int*)curr->data));
+        curr = curr->next;
+    }
 
-//     printf("\n");
-// }
+    printf("\n");
+}
 
+/*
+ * Atentie! Aceasta functie poate fi apelata doar pe liste ale caror noduri STIM ca stocheaza string-uri.
+ * Functia afiseaza toate string-urile stocate in nodurile din lista inlantuita, separate printr-un spatiu.
+ */
+void print_string_linkedlist(struct LinkedList *list) {
+    struct Node *curr;
+
+    if (list == NULL) {
+        return;
+    }
+
+    curr = list->head;
+    while (curr != NULL) {
+        printf("%s ", (char*)curr->data);
+        curr = curr->next;
+    }
+
+    printf("\n");
+}
