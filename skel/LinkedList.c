@@ -1,3 +1,5 @@
+/* Copyright 2020 Pasca Mihai; Nicolae Diana*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -27,7 +29,11 @@ void add_nth_node(struct LinkedList *list, int n, void *new_data) {
         perror("Not enough memory to add element!");
         return;
     }
-
+    if (n > list->size) {
+        n = list->size;
+    } else if (n < 0) {
+        return;
+    }
     new_node->data = new_data;
     new_node->next = NULL;
     if (n == 0) {
@@ -117,44 +123,4 @@ void free_list(struct LinkedList **pp_list) {
 
     free(*pp_list);
     *pp_list = NULL;
-}
-
-/*
- * Atentie! Aceasta functie poate fi apelata doar pe liste ale caror noduri STIM ca stocheaza int-uri.
- * Functia afiseaza toate valorile int stocate in nodurile din lista inlantuita separate printr-un spatiu.
- */
-void print_int_linkedlist(struct LinkedList *list) {
-    struct Node *curr;
-
-    if (list == NULL) {
-        return;
-    }
-
-    curr = list->head;
-    while (curr != NULL) {
-        printf("%d ", *((int*)curr->data));
-        curr = curr->next;
-    }
-
-    printf("\n");
-}
-
-/*
- * Atentie! Aceasta functie poate fi apelata doar pe liste ale caror noduri STIM ca stocheaza string-uri.
- * Functia afiseaza toate string-urile stocate in nodurile din lista inlantuita, separate printr-un spatiu.
- */
-void print_string_linkedlist(struct LinkedList *list) {
-    struct Node *curr;
-
-    if (list == NULL) {
-        return;
-    }
-
-    curr = list->head;
-    while (curr != NULL) {
-        printf("%s ", (char*)curr->data);
-        curr = curr->next;
-    }
-
-    printf("\n");
 }

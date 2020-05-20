@@ -1,3 +1,5 @@
+/* Copyright 2020 Pasca Mihai; Nicolae Diana*/
+
 #ifndef __LINKEDLIST_H__
 #define __LINKEDLIST_H__
 
@@ -26,9 +28,5 @@ struct Node* remove_nth_node(struct LinkedList *list, int n);
 int get_size(struct LinkedList *list);
 
 void free_list(struct LinkedList **list);
-
-void print_int_linkedlist(struct LinkedList *list);
-
-void print_string_linkedlist(struct LinkedList *list);
 
 #endif /* __LINKEDLIST_H__ */

@@ -32,41 +32,26 @@ unsigned int hash_function_string(void *a) {
     return hash;
 }
 
-/*
- * Functie apelata dupa alocarea unui hashtable pentru a-l initializa.
- * Trebuie alocate si initializate si listele inlantuite.
- */
 void init_ht(struct Hashtable *ht, int hmax) {
     int i;
     ht -> buckets = malloc(hmax * sizeof(struct LinkedList));
     ht -> venue = malloc(hmax * sizeof(struct LinkedList));
     ht -> authors = malloc(hmax * sizeof(struct LinkedList));
     ht -> field = malloc(hmax * sizeof(struct LinkedList));
+    ht -> citations = malloc(hmax * sizeof(struct LinkedList));
     for (i = 0; i < hmax; i++) {
         init_list(&(ht -> buckets[i]));
         init_list(&(ht -> venue[i]));
         init_list(&(ht -> authors[i]));
         init_list(&(ht -> field[i]));
+        init_list(&(ht -> citations[i]));
     }
     ht -> hmax = hmax;
     ht -> size = 0;
     ht->year_freq = calloc(YEARS, sizeof(int));
 }
 
-/*
- * Atentie! Desi cheia este trimisa ca un void pointer (deoarece nu se impune tipul ei), in momentul in care
- * se creeaza o noua intrare in hashtable (in cazul in care cheia nu se gaseste deja in ht), trebuie creata o copie
- * a valorii la care pointeaza key si adresa acestei copii trebuie salvata in structura info asociata intrarii din ht.
- * Pentru a sti cati octeti trebuie alocati si ;copiati, folositi parametrul key_size_bytes.
- *
- * Motivatie:
- * Este nevoie sa copiem valoarea la care pointeaza key deoarece dupa un apel put(ht, key_actual, value_actual),
- * valoarea la care pointeaza key_actual poate fi alterata (de ex: *key_actual++). Daca am folosi direct adresa
- * pointerului key_actual, practic s-ar modifica din afara hashtable-ului cheia unei intrari din hashtable.
- * Nu ne dorim acest lucru, fiindca exista riscul sa ajungem in situatia in care nu mai stim la ce cheie este
- * inregistrata o anumita valoare.
- */
-void put(struct Hashtable *ht, void *key, void *value, int key_size) {
+void put_id(struct Hashtable *ht, void *key, void *value, int key_size) {
     unsigned int index = hash_function_int(key) % ht->hmax;
     struct info *newInfo;
     newInfo = malloc(sizeof(struct info));
@@ -78,35 +63,115 @@ void put(struct Hashtable *ht, void *key, void *value, int key_size) {
 }
 
 void put_venue(struct Hashtable *ht, void *key, void *value, int key_size) {
-    unsigned int index = hash_function_string(key) % ht->hmax;
-    struct info *newInfo;
-    newInfo = malloc(sizeof(struct info));
-    newInfo -> key = malloc(key_size);
-    memcpy(newInfo -> key, key, key_size);
-    newInfo -> value = value;
-    add_nth_node(&ht -> venue[index], ht->venue[index].size, newInfo);
+    unsigned int index = hash_function_string(key);
+    index = index % ht -> hmax;
+    struct Node *curr;
+    struct list_info *entry, *newVenue;
+    curr = ht->venue[index].head;
+    while (curr != NULL) {
+        entry = (struct list_info*)curr -> data;
+        if (!strcmp(entry -> key, key)) {
+            add_nth_node(entry->list, 1000, value);
+            return;
+        }
+        curr = curr -> next;
+    }
+    newVenue = malloc(sizeof(struct list_info));
+    // Add new key
+    newVenue -> key = malloc(key_size * sizeof(char));
+    memcpy(newVenue -> key, key, key_size * sizeof(char));
+    // Add new list
+    struct LinkedList* newList;
+    newList = malloc(sizeof(struct LinkedList));
+    init_list(newList);
+    newVenue->list = newList;
+    add_nth_node(&ht -> venue[index], ht->venue[index].size, newVenue);
+    add_nth_node(newVenue->list, 0, value);
     ht -> size++;
 }
 
 void put_field(struct Hashtable *ht, void *key, void *value, int key_size) {
-    unsigned int index = hash_function_string(key) % ht->hmax;
-    struct info *newInfo;
-    newInfo = malloc(sizeof(struct info));
-    newInfo -> key = malloc(key_size);
-    memcpy(newInfo -> key, key, key_size);
-    newInfo -> value = value;
-    add_nth_node(&ht -> field[index], ht->field[index].size, newInfo);
+    unsigned int index = hash_function_string(key);
+    index = index % ht -> hmax;
+    struct Node *curr;
+    struct list_info *entry, *newField;
+    curr = ht->field[index].head;
+    while (curr != NULL) {
+        entry = (struct list_info*)curr -> data;
+        if (!strcmp(entry -> key, key)) {
+            add_nth_node(entry->list, 1000, value);
+            return;
+        }
+        curr = curr -> next;
+    }
+    newField = malloc(sizeof(struct list_info));
+    // Add new key
+    newField -> key = malloc(key_size * sizeof(char));
+    memcpy(newField -> key, key, key_size * sizeof(char));
+    // Add new list
+    struct LinkedList* newList;
+    newList = malloc(sizeof(struct LinkedList));
+    init_list(newList);
+    newField->list = newList;
+    add_nth_node(&ht->field[index], ht->field[index].size, newField);
+    add_nth_node(newField->list, 0, value);
     ht -> size++;
 }
 
-void put_authors(struct Hashtable *ht, void *key, void *value, int key_size) {
-    unsigned int index = hash_function_int(key) % ht->hmax;
-    struct info *newInfo;
-    newInfo = malloc(sizeof(struct info));
-    newInfo -> key = malloc(key_size);
-    memcpy(newInfo -> key, key, key_size);
-    newInfo -> value = value;
-    add_nth_node(&ht -> authors[index], ht->authors[index].size, newInfo);
+void put_authors(struct Hashtable *ht, void *key, void* value, int key_size) {
+    unsigned int index = hash_function_int(key);
+    index = index % ht -> hmax;
+    int i;
+    struct Node *curr;
+    struct list_info *entry, *newAuthor;
+    curr = ht->authors[index].head;
+    while (curr != NULL) {
+        entry = (struct list_info*)curr -> data;
+        if (memcmp(entry->key, key, key_size) == 0) {
+            add_nth_node(entry->list, (1 << 30), value);
+            return;
+        }
+        curr = curr -> next;
+    }
+    newAuthor = malloc(sizeof(struct list_info));
+    // Add new key
+    newAuthor -> key = malloc(key_size);
+    memcpy(newAuthor -> key, key, key_size);
+    // Add new list
+    struct LinkedList* newList;
+    newList = malloc(sizeof(struct LinkedList));
+    init_list(newList);
+    newAuthor->list = newList;
+    add_nth_node(&ht->authors[index], ht->authors[index].size, newAuthor);
+    add_nth_node(newAuthor->list, 0, value);
+    ht -> size++;
+}
+
+void put_citations(struct Hashtable *ht, void *key, void *value, int key_size) {
+    unsigned int index = hash_function_int(key);
+    index = index % ht -> hmax;
+    struct Node *curr;
+    struct list_info *cit, *newCit;
+    curr = ht -> citations[index].head;
+    while (curr != NULL) {
+        cit = (struct list_info*)curr -> data;
+        if (memcmp(cit -> key, key, key_size) == 0) {
+            add_nth_node(cit->list, 1000, value);
+            return;
+        }
+        curr = curr -> next;
+    }
+    newCit = malloc(sizeof(struct list_info));
+    // Add new key
+    newCit -> key = malloc(key_size);
+    memcpy(newCit -> key, key, key_size);
+    // Add new list
+    struct LinkedList* newList;
+    newList = malloc(sizeof(struct LinkedList));
+    init_list(newList);
+    newCit->list = newList;
+    add_nth_node(&ht -> citations[index], ht->citations[index].size, newCit);
+    add_nth_node(newCit->list, 0, value);
     ht -> size++;
 }
 
@@ -127,60 +192,69 @@ void* get(struct Hashtable *ht, const int64_t *key, int key_size) {
     return NULL;
 }
 
-/*
- * Functie care intoarce:
- * 1, daca pentru cheia key a fost asociata anterior o valoare in hashtable folosind functia put
- * 0, altfel.
- */
-int has_key(struct Hashtable *ht, void *key) {
-    unsigned int index = hash_function_int(key) % ht->hmax;
-    struct LinkedList bucket = ht -> buckets[index % ht->hmax];
-    struct Node *curr;
-    curr = bucket.head;
-    while (curr != NULL) {
-        struct info *inf = (struct info*)curr -> data;
-        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
-            return 1;
-        }
-        curr = curr -> next;
-    }
-    return 0;
-}
-
-/*
- * Procedura care elimina din hashtable intrarea asociata cheii key.
- * Atentie! Trebuie avuta grija la eliberarea intregii memorii folosite pentru o intrare din hashtable (adica memoria
- * pentru copia lui key --vezi observatia de la procedura put--, pentru structura info si pentru structura Node din
- * lista inlantuita).
- */
-void remove_ht_entry(struct Hashtable *ht, void *key) {
+struct LinkedList* get_cit_list(struct Hashtable *ht, const int64_t* key) {
     unsigned int index = hash_function_int(key);
-    struct LinkedList bucket = ht -> buckets[index % ht->hmax];
-    struct Node *curr;
-    int i = 0;
-    curr = bucket.head;
+    index = index % ht->hmax;
+    struct Node* curr;
+    curr = ht->citations[index].head;
     while (curr != NULL) {
-        struct info *inf = (struct info*)curr -> data;
-        if (memcmp(inf -> key, key, sizeof(int64_t)) == 0) {
-            curr = remove_nth_node(&ht -> buckets[index], i);
-            free(inf -> key);
-            free(curr -> data);
-            free(curr);
-            ht -> size--;
-            return;
+        struct list_info* cit = curr -> data;
+        if (memcmp(cit -> key, key, sizeof(int64_t)) == 0) {
+            return cit->list;
         }
         curr = curr -> next;
-        i++;
     }
+    return NULL;
 }
 
-/*
- * Procedura care elibereaza memoria folosita de toate intrarile din hashtable, dupa care elibereaza si memoria folosita
- * pentru a stoca structura hashtable.
- */
+struct LinkedList* get_authors_list(struct Hashtable *ht, const int64_t* key) {
+    unsigned int index = hash_function_int(key);
+    index = index % ht->hmax;
+    struct Node* curr;
+    curr = ht->authors[index].head;
+    while (curr != NULL) {
+        struct list_info* inf = curr -> data;
+        if (!memcmp(inf->key, key, sizeof(int64_t))) {
+            return inf->list;
+        }
+        curr = curr -> next;
+    }
+    return NULL;
+}
+
+struct LinkedList* get_venue_list(struct Hashtable *ht, char* key) {
+    unsigned int index = hash_function_string(key);
+    index = index % ht->hmax;
+    struct Node* curr;
+    curr = ht->venue[index].head;
+    while (curr != NULL) {
+        struct list_info* entry = curr -> data;
+        if (!strcmp(entry -> key, key)) {
+            return entry->list;
+        }
+        curr = curr -> next;
+    }
+    return NULL;
+}
+
+struct LinkedList* get_field_list(struct Hashtable *ht, char* key) {
+    unsigned int index = hash_function_string(key);
+    index = index % ht->hmax;
+    struct Node* curr;
+    curr = ht->field[index].head;
+    while (curr != NULL) {
+        struct list_info* entry = curr -> data;
+        if (!strcmp(entry -> key, key)) {
+            return entry->list;
+        }
+        curr = curr -> next;
+    }
+    return NULL;
+}
+
 void free_ht(struct Hashtable *ht) {
     int i, j;
-    struct Node *currNode;
+    struct Node *currNode, *currNode2;
     if (ht == NULL || ht -> buckets == NULL) {
         return;
     }
@@ -208,51 +282,49 @@ void free_ht(struct Hashtable *ht) {
             free(currNode -> data);
             free(currNode);
         }
-        while(ht->venue[i].head != NULL) {
+        while (ht->venue[i].head != NULL) {
             currNode = remove_nth_node(&ht->venue[i], 0);
-            struct info *inf = (struct info*)currNode -> data;
+            struct list_info *inf = currNode -> data;
             free(inf->key);
+            free_list(&inf->list);
             free(currNode->data);
             free(currNode);
         }
-        while(ht->authors[i].head != NULL) {
+        while (ht->authors[i].head != NULL) {
             currNode = remove_nth_node(&ht->authors[i], 0);
-            struct info *inf = (struct info*)currNode -> data;
+            struct list_info *inf = currNode -> data;
             free(inf->key);
+            free_list(&inf->list);
             free(currNode->data);
             free(currNode);
         }
-        while(ht->field[i].head != NULL) {
+        while (ht->field[i].head != NULL) {
             currNode = remove_nth_node(&ht->field[i], 0);
-            struct info *inf = (struct info*)currNode -> data;
+            struct list_info *inf = currNode -> data;
             free(inf->key);
+            free_list(&inf->list);
+            free(currNode->data);
+            free(currNode);
+        }
+        while (ht->citations[i].head != NULL) {
+            currNode = remove_nth_node(&ht->citations[i], 0);
+            struct list_info *cit = currNode -> data;
+            free(cit->key);
+            free_list(&cit->list);
             free(currNode->data);
             free(currNode);
         }
     }
+    free(ht -> citations);
     free(ht->field);
     free(ht->authors);
     free(ht -> buckets);
     free(ht->venue);
     ht->buckets = NULL;
     ht->venue = NULL;
+    ht->authors = NULL;
+    ht->field = NULL;
     free(ht->year_freq);
     free(ht);
     ht = NULL;
-}
-
-int get_ht_size(struct Hashtable *ht) {
-    if (ht == NULL) {
-        return -1;
-    }
-
-    return ht->size;
-}
-
-int get_ht_hmax(struct Hashtable *ht) {
-    if (ht == NULL) {
-        return -1;
-    }
-
-    return ht->hmax;
 }
