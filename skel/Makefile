@@ -6,20 +6,23 @@ PUBL=publications
 
 build: $(PUBL).o
 
-Queue.o: Queue.c Queue.h
-	$(CC) $(CFLAGS) Queue.c -c -o Queue.o
+heap.o: heap.c heap.h
+	$(CC) $(CFLAGS) heap.c -c -o heap.o
 
-Hashtable.o: Hashtable.c Hashtable.h
-	$(CC) $(CFLAGS) Hashtable.c -c -o Hashtable.o
+queue.o: queue.c queue.h
+	$(CC) $(CFLAGS) queue.c -c -o queue.o
 
-LinkedList.o: LinkedList.c LinkedList.h
-	$(CC) $(CFLAGS) LinkedList.c -c -o LinkedList.o
+hashtable.o: hashtable.c hashtable.h
+	$(CC) $(CFLAGS) hashtable.c -c -o hashtable.o
+
+linkedList.o: linkedList.c linkedList.h
+	$(CC) $(CFLAGS) linkedList.c -c -o linkedList.o
 
 publ.o: $(PUBL).c $(PUBL).h
 	$(CC) $(CFLAGS) $(PUBL).c -c -o publ.o
 
-$(PUBL).o: Hashtable.o LinkedList.o publ.o Queue.o
-	ld -m elf_i386 -r publ.o Hashtable.o LinkedList.o Queue.o -o $(PUBL).o
+$(PUBL).o: hashtable.o linkedList.o publ.o queue.o heap.o
+	ld -m elf_i386 -r publ.o hashtable.o linkedList.o queue.o heap.o -o $(PUBL).o
 
 clean:
 	rm -f *.o *.h.gch

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "Queue.h"
+#include "queue.h"
 
 void init_q(Queue *q) {
     q->list = malloc(sizeof(struct LinkedList));

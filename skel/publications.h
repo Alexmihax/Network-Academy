@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#define LMAX 300
 #define HMAX 3000
 #define MAXV 10000
 
@@ -33,7 +32,7 @@
  * Define its fields in publications.c or any other file so that its fields
  * are transparent from outside the API.
  */
-typedef struct Hashtable PublData;
+typedef struct PublData PublData;
 
 /**
  * Initialises all the fields contained in the PublData structure.

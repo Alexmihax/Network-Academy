@@ -1,11 +1,32 @@
-Inca nu l-am scris  :))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
-:))))))))))))))
+Autori: Pasca Mihai Alexandru; Nicolae Mihaela Diana
+
+task 0: add_paper
+Functia care adauga datele paper-urilor intr-o structura, pentru ca mai apoi sa fie accesate rapid in 
+Hashtable-urile folosite: cu cheile id, venue, field, authors si citations. In citations se retine cate o lista
+cu  citari pentru fiecare paper, in id se retin datele despre fiecare paper, iar in venue, field si authors
+se retine o lista cu paper-urile apartenente pentru fiecare cheie.
+
+task 1: get_oldest_influence
+Functia cauta cea mai veche referinta recursiv. Datele paper-urilor se obtin din hashtable-ul id, urmand 
+sa apelam functia recursiva pentru fiecare referinta noua gasita(verificam daca a mai fost parcursa sau neadaugata)
+si sa updatam cel mai vechi paper gasit in cazul in care este nevoie. In cazul in care doua paper-uri sunt scrise
+in acelasi an, se va alege cel cu numarul de citari mai mare, acesta fiind obtinut din hashtable-ul cu 
+citations, unde size-ul listei de citari reprezinta numarul acestora , iar daca si aici este egalitate,
+se va alege cel cu id mai mic.
+
+task 2: get_venue_impact factor
+Functia returneaza factorul de impact care este definit ca raportul dintre numarul de citari ale paper-urilor 
+apartinand venue-ului si numarul acestora. Lista cu paper-urile de la acel venue este obtinuta din hashtable-ul
+venue, iar size-ul acestuia reprezinta numarul paper-urilor. Pentru fiecare paper este extras numarul de citari
+din hashtable-ul de citations si adaugat la suma totala.
+
+task 3: get_number_of_influenced papers
+Functia returneaza numarul de articole influentate pe o anumita distanta fata de un paper. Functia recursiva va
+verifica daca un paper nu este adaugat sau a mai fost parcurs, si se va reapela pentru fiecare citare, care 
+este extrasa din hashtable-ul citations, si va incrementa numarul de paper-uri influentate care este transmis in functia 
+principala prin intermediul unui parametru. Atunci cand distanta a fost atinsa, recursivitatea se opreste, parcurgerea 
+fiind terminata.
+
+task 4: get_erdors_distance
+
+task 5: get_most_cited_papers_by_field

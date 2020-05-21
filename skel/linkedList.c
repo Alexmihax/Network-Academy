@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "LinkedList.h"
+#include "linkedList.h"
 
 /*
  * Functie care trebuie apelata dupa alocarea unei liste simplu inlantuite, pentru a o initializa.

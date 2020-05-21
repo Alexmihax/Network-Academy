@@ -2,7 +2,7 @@
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
-#include "LinkedList.h"
+#include "linkedList.h"
 
 typedef struct {
     struct LinkedList *list;
