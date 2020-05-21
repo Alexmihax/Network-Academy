@@ -115,24 +115,14 @@ void add_paper(PublData* data, const char* title, const char* venue,
     put_list(data->venue, info->venue, info, LMAX);
 }
 
-int verified(int64_t *verified, int64_t id) {
-    int i;
-    for (i = 0; i < MAXV; i++) {
-        if (verified[i] == id) {
-            return 1;
-        }
-        if (verified[i] == 0) {
-            verified[i] = id;
-            return 0;
-        }
-    }
-}
-
 void get_oldest(PublData*data, const int64_t id_paper, int* ok,
     struct paper_data *oldest, int64_t* verified) {
-    struct paper_data *paper_data = get(data->id, &id_paper);
+    struct LinkedList* cit_list;
+    struct paper_data *paper_data;
+    int64_t copy_id = id_paper;
     int i, j;
 
+    paper_data = get(data->id, &copy_id);
     // The paper was not added
     if (paper_data == NULL)
         return;
@@ -153,8 +143,8 @@ void get_oldest(PublData*data, const int64_t id_paper, int* ok,
     // Find the oldest citation
     if (oldest->year >= paper_data->year) {
         if (oldest->year == paper_data->year) {
-            struct LinkedList* cit_list = get_list(data->citations,
-                                                    &oldest->id);
+            cit_list = get_list(data->citations,
+                &oldest->id);
 
             oldest->num_cits = cit_list->size;
             cit_list = get_list(data->citations, &paper_data->id);
@@ -179,15 +169,16 @@ void get_oldest(PublData*data, const int64_t id_paper, int* ok,
 }
 
 char* get_oldest_influence(PublData* data, const int64_t id_paper) {
-    struct paper_data oldest;
-    oldest.year = 2021;
-    int64_t *verified;
+    struct paper_data oldest, *paper_data;
+    int64_t *verified, copy_id;
     int i, ok = 0;
 
+    oldest.year = 2021;
     verified = calloc(MAXV, sizeof(int64_t));
     verified[0] = id_paper;
 
-    struct paper_data *paper_data = get(data->id, &id_paper);
+    copy_id = id_paper;
+    paper_data = get(data->id, &copy_id);
     for (i = 0; i < paper_data->num_refs; i++) {
         get_oldest(data, paper_data->references[i], &ok, &oldest, verified);
     }
@@ -197,18 +188,21 @@ char* get_oldest_influence(PublData* data, const int64_t id_paper) {
 }
 
 float get_venue_impact_factor(PublData* data, const char* venue) {
-    struct LinkedList *venue_list = get_list(data->venue, venue);
+    struct LinkedList *venue_list, *cit_list;
+    struct Node *curr;
+    struct paper_data *info;
     float influence_factor = 0;
 
+    venue_list = get_list(data->venue, venue);
     if (!venue_list) {
         return 0;
     }
 
-    struct Node *curr = venue_list->head;
+    curr = venue_list->head;
     while (curr) {
-        struct paper_data *info = curr->data;
+        info = curr->data;
         if (!strcmp(info->venue, venue)) {
-            struct LinkedList* cit_list = get_list(data->citations, &info->id);
+            cit_list = get_list(data->citations, &info->id);
             if (cit_list) {
                 influence_factor += cit_list->size;
             }
@@ -221,9 +215,12 @@ float get_venue_impact_factor(PublData* data, const char* venue) {
 
 void calculate_number(PublData* data, int64_t id_paper, int distance,
     int64_t* verified, int* nr) {
-    struct paper_data *paper_data = get(data->id, &id_paper);
+    struct LinkedList* cit_list;
+    struct Node *curr;
+    struct paper_data *paper_data, *data_cit;
     int j;
 
+    paper_data = get(data->id, &id_paper);
     if (paper_data == NULL) {
         return;
     }
@@ -244,11 +241,11 @@ void calculate_number(PublData* data, int64_t id_paper, int distance,
         return;
     }
 
-    struct LinkedList* cit_list = get_list(data->citations, &id_paper);
+    cit_list = get_list(data->citations, &id_paper);
     if (cit_list) {
-        struct Node *curr = cit_list->head;
+        curr = cit_list->head;
         while (curr) {
-            struct paper_data *data_cit = curr->data;
+            data_cit = curr->data;
             calculate_number(data, data_cit->id, distance - 1, verified, nr);
             curr = curr->next;
         }
@@ -269,12 +266,13 @@ int get_number_of_influenced_papers(PublData* data, const int64_t id_paper,
 void free_erdos(struct Hashtable* author, Queue *q) {
     int i;
     struct Node* curr_node;
+    struct info *inf;
 
     // Free hashtable
     for (i = 0; i < author -> hmax; i++) {
         while (author -> buckets[i].head != NULL) {
             curr_node = remove_nth_node(&author->buckets[i], 0);
-            struct info *inf = (struct info*)curr_node->data;
+            inf = (struct info*)curr_node->data;
             free(inf->value);
             free(inf->key);
             free(curr_node->data);
@@ -292,7 +290,10 @@ void free_erdos(struct Hashtable* author, Queue *q) {
 int get_erdos_distance(PublData* data, const int64_t id1, const int64_t id2) {
     Queue *q;
     struct Hashtable* author;
-    int *dist, *new_dist, answer, i, j, *id;;
+    struct LinkedList *author_list;
+    struct Node *curr;
+    struct paper_data *paper;
+    int *dist, *new_dist, answer, i, *id;;
 
     // initialise hashtable for bfs
     author = malloc(sizeof(struct Hashtable));
@@ -315,16 +316,16 @@ int get_erdos_distance(PublData* data, const int64_t id1, const int64_t id2) {
         id = front(q);
         dequeue(q);
         // Get the list of papers for the author
-        struct LinkedList *author_list = get_list(data->authors, id);
+        author_list = get_list(data->authors, id);
 
         if (!author_list) {
             continue;
         }
         dist = get(author, id);
-        struct Node *curr = author_list->head;
+        curr = author_list->head;
 
         while (curr) {
-            struct paper_data *paper = curr -> data;
+            paper = curr -> data;
             for (i = 0; i < paper->num_authors; i++) {
                 new_dist = get(author, &paper->author_ids[i]);
                 if (!new_dist) {
@@ -370,13 +371,14 @@ void swap(struct paper_data **papers, char **titles, int i, int j) {
 
 char** get_most_cited_papers_by_field(PublData* data, const char* field,
     int* num_papers) {
-    struct paper_data **paper_list;
+    struct LinkedList *field_list, *cits_list;
+    struct Node *curr;
+    struct paper_data **paper_list, *paper;
     char **most_cited;
-    int *most_cited_count;
     int i = 0, j, number;
 
-    struct LinkedList *field_list = get_list(data->field, field);
-    struct Node *curr = field_list->head;
+    field_list = get_list(data->field, field);
+    curr = field_list->head;
 
     paper_list = malloc(field_list->size * sizeof(struct paper_data*));
     DIE(paper_list == NULL, "paper_list malloc");
@@ -384,8 +386,8 @@ char** get_most_cited_papers_by_field(PublData* data, const char* field,
     DIE(most_cited == NULL, "most_cited malloc");
 
     while (curr) {
-        struct paper_data *paper = curr->data;
-        struct LinkedList *cits_list = get_list(data->citations, &paper->id);
+        paper = curr->data;
+        cits_list = get_list(data->citations, &paper->id);
 
         if (cits_list == NULL) {
             paper->num_cits = 0;
@@ -447,12 +449,14 @@ int get_number_of_authors_with_field(PublData* data, const char* institution,
     const char* field) {
     struct LinkedList *field_list = get_list(data->field, field);
     struct Node *curr = field_list->head;
+    struct paper_data *paper_data;
     int x, i, nr = 0;
     int64_t *verified;
+
     verified = calloc(MAXV,  sizeof(int64_t));
 
     while (curr) {
-        struct paper_data *paper_data = curr->data;
+        paper_data = curr->data;
         for (i = 0; i < paper_data->num_authors; i++) {
             if (!strcmp(paper_data->institutions[i], institution)) {
                 for (x = 0; x < MAXV; x++) {
@@ -475,21 +479,23 @@ int get_number_of_authors_with_field(PublData* data, const char* institution,
 
 int* get_histogram_of_citations(PublData* data, const int64_t id_author,
     int* num_years) {
-    struct LinkedList* authors_list = get_list(data->authors, &id_author);
-    struct Node *curr = authors_list->head;
+    struct LinkedList *authors_list, *cit_list;
+    struct Node *curr;
+    struct paper_data *paper_data;
     int* histogram;
     int i;
 
+    authors_list = get_list(data->authors, &id_author);
+    curr = authors_list->head;
     *num_years = 2021;
     histogram = calloc(YEARS, sizeof(int));
 
     while (curr) {
-        struct paper_data *paper_data = curr->data;
+        paper_data = curr->data;
         for (i = 0; i < paper_data->num_authors; i++) {
             if (!memcmp(&paper_data->author_ids[i], &id_author,
                 sizeof(int64_t))) {
-                struct LinkedList* cit_list = get_list(data->citations,
-                                                    &paper_data->id);
+                cit_list = get_list(data->citations, &paper_data->id);
                 if (cit_list) {
                     histogram[2020-paper_data->year] += cit_list->size;
                 }
@@ -514,13 +520,17 @@ int compare_function(const struct paper_data* paper1,
                     if (paper1->id < paper2->id) {
                         return 1;
                     }
-                } else return 1;
-            } 
-        } else return 1;
+                } else {
+                    return 1;
+                }
+            }
+        } else {
+            return 1;
+        }
     }
     return 0;
 }
- 
+
 char** get_reading_order(PublData* data, const int64_t id_paper,
     const int distance, int* num_papers) {
     heap_t *heap;
@@ -533,7 +543,7 @@ char** get_reading_order(PublData* data, const int64_t id_paper,
     int i, *dist, *new_dist;
 
     heap = heap_create(compare_function);
-    
+
     // initialise hashtable for bfs
     papers = malloc(sizeof(struct Hashtable));
     DIE(papers == NULL, "papers malloc");
@@ -588,7 +598,7 @@ char** get_reading_order(PublData* data, const int64_t id_paper,
         heap_pop(heap);
         answer[i] = malloc(LMAX * sizeof(char));
         DIE(answer == NULL, "answer malloc");
-        snprintf(answer[i], LMAX, "%s",paper->title);
+        snprintf(answer[i], LMAX, "%s", paper->title);
     }
     free_erdos(papers, q);
     heap_free(heap);
@@ -597,17 +607,20 @@ char** get_reading_order(PublData* data, const int64_t id_paper,
 }
 
 float calculate_score(PublData *data, int64_t id, int e_dist) {
-    struct LinkedList *author_list = get_list(data->authors, &id);
+    struct LinkedList *author_list, *cit;
+    struct Node *curr;
+    struct paper_data* paper;
     float score = 0, prod;
 
+    author_list = get_list(data->authors, &id);
     if (!author_list) {
         return 0;
     }
-    struct Node *curr = author_list->head;
+    curr = author_list->head;
 
     while (curr) {
-        struct paper_data* paper = curr->data;
-        struct LinkedList *cit = get_list(data->citations, &paper->id);
+        paper = curr->data;
+        cit = get_list(data->citations, &paper->id);
         prod = 0;
         if (cit) {
             prod = cit->size;
@@ -623,7 +636,10 @@ float calculate_score(PublData *data, int64_t id, int e_dist) {
 char* find_best_coordinator(PublData* data, const int64_t id_author) {
     Queue *q;
     struct Hashtable* author;
-    int i, j, *id, min_erd = 6, *dist, *new_dist;
+    struct LinkedList *author_list;
+    struct Node *curr;
+    struct paper_data *paper;
+    int i, *id, min_erd = 6, *dist, *new_dist;
     int64_t min_id = INT64_MAX;
     float score = -1, new_score;
     char *answer = NULL;
@@ -649,15 +665,15 @@ char* find_best_coordinator(PublData* data, const int64_t id_author) {
         id = front(q);
         dequeue(q);
         // Get the list of papers for the author
-        struct LinkedList *author_list = get_list(data->authors, id);
+        author_list = get_list(data->authors, id);
         if (!author_list) {
             continue;
         }
         dist = get(author, id);
-        struct Node *curr = author_list->head;
+        curr = author_list->head;
 
         while (curr) {
-            struct paper_data *paper = curr -> data;
+            paper = curr -> data;
             for (i = 0; i < paper->num_authors; i++) {
                 new_dist = get(author, &paper->author_ids[i]);
 
@@ -673,17 +689,16 @@ char* find_best_coordinator(PublData* data, const int64_t id_author) {
                     new_score = calculate_score(data, paper->author_ids[i],
                                                  *new_dist);
                     if (score <= new_score) {
-                        if(score == new_score) {
+                        if (score == new_score) {
                             if (min_erd >= *new_dist) {
                                 if (min_erd == *new_dist) {
-                                    if(min_id > paper->author_ids[i]) {
+                                    if (min_id > paper->author_ids[i]) {
                                         min_erd = *new_dist;
                                         min_id = paper->author_ids[i];
                                         answer = paper->author_names[i];
                                         score = new_score;
                                     }
-                                }
-                                else {
+                                } else {
                                     min_erd = *new_dist;
                                     min_id = paper->author_ids[i];
                                     answer = paper->author_names[i];

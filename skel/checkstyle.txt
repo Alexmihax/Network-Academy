@@ -1,89 +1,11 @@
-./publications.c:517:  If an else has a brace on one side, it should have it on both  [readability/braces] [5]
-./publications.c:517:  Else clause should never be on same line as else (use 2 lines)  [whitespace/newline] [4]
-./publications.c:518:  Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
-./publications.c:519:  If an else has a brace on one side, it should have it on both  [readability/braces] [5]
-./publications.c:519:  Else clause should never be on same line as else (use 2 lines)  [whitespace/newline] [4]
-./publications.c:523:  Weird number of spaces at line-start.  Are you using a 2-space indent?  [whitespace/indent] [3]
-./publications.c:523:  Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
-./publications.c:536:  Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]
-./publications.c:591:  Missing space after ,  [whitespace/comma] [3]
-./publications.c:676:  Missing space before ( in if(  [whitespace/parens] [5]
-./publications.c:679:  Missing space before ( in if(  [whitespace/parens] [5]
-./publications.c:686:  An else should appear on the same line as the preceding }  [whitespace/newline] [4]
-./publications.c:686:  If an else has a brace on one side, it should have it on both  [readability/braces] [5]
-./heap.h:0:  No copyright message found.  You should have a line: "Copyright [year] <Copyright Owner>"  [legal/copyright] [5]
-./heap.h:29:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.h:37:  Lines should be <= 80 characters long  [whitespace/line_length] [2]
-./heap.h:37:  Extra space before ( in function call  [whitespace/parens] [4]
-./heap.c:7:  Extra space before ( in function call  [whitespace/parens] [4]
-./heap.c:8:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:9:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:11:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:12:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:14:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:15:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:16:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:17:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:18:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:20:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:24:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:26:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:27:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:29:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:30:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:31:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:32:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:33:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:34:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:35:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:39:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:41:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:43:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:45:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:46:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:47:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:49:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:50:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:51:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:55:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:59:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:60:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:61:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:62:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:66:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:67:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:68:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:69:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:70:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:71:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:72:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:73:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:74:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:75:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:76:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:77:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:78:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:79:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:80:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:81:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:82:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:83:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:84:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:85:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:86:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:90:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:92:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:94:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:98:  Tab found; better to use spaces  [whitespace/tab] [1]
-./heap.c:102:  Tab found; better to use spaces  [whitespace/tab] [1]
-Done processing ./publications.c
-Done processing ./heap.h
-Done processing ./hashtable.h
-Done processing ./hashtable.c
-Done processing ./heap.c
 Done processing ./linkedList.h
+Done processing ./linkedList.c
+Done processing ./heap.c
 Done processing ./publications.h
+Done processing ./hashtable.h
 Done processing ./queue.h
 Done processing ./queue.c
-Done processing ./linkedList.c
-Total errors found: 78
+Done processing ./hashtable.c
+Done processing ./heap.h
+Done processing ./publications.c
+Total errors found: 0

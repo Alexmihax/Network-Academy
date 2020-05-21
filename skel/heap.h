@@ -1,10 +1,4 @@
-/**
- * SD, 2020
- * 
- * Lab #9, BST & Heap
- * 
- * Heap structure and function definitions
- */
+/* Copyright 2020 Pasca Mihai; Nicolae Diana */
 
 #ifndef __HEAP_H_
 #define __HEAP_H_
@@ -26,7 +20,7 @@ struct heap_t {
     int size, capacity;
 
     /* function used for sorting the keys */
-    int	(*cmp)(const struct paper_data *key1, const struct paper_data *key2);
+    int (*cmp)(const struct paper_data *key1, const struct paper_data *key2);
 };
 
 /**
@@ -34,7 +28,8 @@ struct heap_t {
  * @cmp_f: pointer to a function used for sorting
  * @return: pointer to the newly created heap
  */
-heap_t *heap_create(int (*cmp_f) (const struct paper_data *, const struct paper_data *));
+heap_t *heap_create(int (*cmp_f)(const struct paper_data *,
+    const struct paper_data *));
 
 /**
  * Insert a new element in a heap
