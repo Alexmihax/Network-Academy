@@ -192,8 +192,13 @@ float get_venue_impact_factor(PublData* data, const char* venue) {
     struct Node *curr;
     struct paper_data *info;
     float influence_factor = 0;
+    char *copy_venue;
 
-    venue_list = get_list(data->venue, venue);
+    copy_venue = malloc(LMAX * sizeof(char));
+    DIE(copy_venue == NULL, "copy_venue malloc");
+    snprintf(copy_venue, LMAX, "%s", venue);
+
+    venue_list = get_list(data->venue, copy_venue);
     if (!venue_list) {
         return 0;
     }
@@ -210,6 +215,7 @@ float get_venue_impact_factor(PublData* data, const char* venue) {
         curr = curr->next;
     }
     influence_factor /= venue_list->size;
+    free(copy_venue);
     return influence_factor;
 }
 
@@ -293,7 +299,9 @@ int get_erdos_distance(PublData* data, const int64_t id1, const int64_t id2) {
     struct LinkedList *author_list;
     struct Node *curr;
     struct paper_data *paper;
-    int *dist, *new_dist, answer, i, *id;;
+    int *dist, *new_dist, answer, i, *id;
+    int64_t copy_id1 = id1;
+    int64_t copy_id2 = id2;
 
     // initialise hashtable for bfs
     author = malloc(sizeof(struct Hashtable));
@@ -304,12 +312,12 @@ int get_erdos_distance(PublData* data, const int64_t id1, const int64_t id2) {
     q = malloc(sizeof(Queue));
     DIE(q == NULL, "queue malloc");
     init_q(q);
-    enqueue(q, &id1);
+    enqueue(q, &copy_id1);
 
     dist = malloc(sizeof(int));
     DIE(dist == NULL, "distance malloc");
     *dist = 0;
-    put(author, &id1, dist, sizeof(int64_t));
+    put(author, &copy_id1, dist, sizeof(int64_t));
 
     while (!is_empty_q(q)) {
         // Get the first element from the queue
@@ -345,7 +353,7 @@ int get_erdos_distance(PublData* data, const int64_t id1, const int64_t id2) {
             curr = curr->next;
         }
     }
-    dist = get(author, &id2);
+    dist = get(author, &copy_id2);
     if (!dist) {
         answer = -1;
     } else {
@@ -376,8 +384,13 @@ char** get_most_cited_papers_by_field(PublData* data, const char* field,
     struct paper_data **paper_list, *paper;
     char **most_cited;
     int i = 0, j, number;
+    char *copy_field;
 
-    field_list = get_list(data->field, field);
+    copy_field = malloc(LMAX * sizeof(char));
+    DIE(copy_field == NULL, "copy_field malloc");
+    snprintf(copy_field, LMAX, "%s", field);
+
+    field_list = get_list(data->field, copy_field);
     curr = field_list->head;
 
     paper_list = malloc(field_list->size * sizeof(struct paper_data*));
@@ -432,6 +445,7 @@ char** get_most_cited_papers_by_field(PublData* data, const char* field,
         free(most_cited[i]);
     }
     free(paper_list);
+    free(copy_field);
     return most_cited;
 }
 
@@ -447,12 +461,19 @@ int get_number_of_papers_between_dates(PublData* data, const int early_date,
 
 int get_number_of_authors_with_field(PublData* data, const char* institution,
     const char* field) {
-    struct LinkedList *field_list = get_list(data->field, field);
-    struct Node *curr = field_list->head;
+    struct LinkedList *field_list;
+    struct Node *curr;
     struct paper_data *paper_data;
     int x, i, nr = 0;
     int64_t *verified;
+    char *copy_field;
 
+    copy_field = malloc(LMAX * sizeof(char));
+    DIE(copy_field == NULL, "copy_field malloc");
+    snprintf(copy_field, LMAX, "%s", field);
+
+    field_list = get_list(data->field, copy_field);
+    curr = field_list->head;
     verified = calloc(MAXV,  sizeof(int64_t));
 
     while (curr) {
@@ -473,6 +494,7 @@ int get_number_of_authors_with_field(PublData* data, const char* institution,
         }
     curr = curr->next;
     }
+    free(copy_field);
     free(verified);
     return nr;
 }
@@ -482,10 +504,10 @@ int* get_histogram_of_citations(PublData* data, const int64_t id_author,
     struct LinkedList *authors_list, *cit_list;
     struct Node *curr;
     struct paper_data *paper_data;
-    int* histogram;
-    int i;
+    int *histogram, i;
+    int64_t copy_id = id_author;
 
-    authors_list = get_list(data->authors, &id_author);
+    authors_list = get_list(data->authors, &copy_id);
     curr = authors_list->head;
     *num_years = 2021;
     histogram = calloc(YEARS, sizeof(int));
@@ -542,6 +564,7 @@ char** get_reading_order(PublData* data, const int64_t id_paper,
     int64_t *id;
     int i, *dist, *new_dist;
 
+    int64_t copy_id = id_paper;
     heap = heap_create(compare_function);
 
     // initialise hashtable for bfs
@@ -553,12 +576,12 @@ char** get_reading_order(PublData* data, const int64_t id_paper,
     q = malloc(sizeof(Queue));
     DIE(q == NULL, "queue malloc");
     init_q(q);
-    enqueue(q, &id_paper);
+    enqueue(q, &copy_id);
 
     dist = malloc(sizeof(int));
     DIE(dist == NULL, "dist malloc");
     *dist = 0;
-    put(papers, &id_paper, dist, sizeof(int64_t));
+    put(papers, &copy_id, dist, sizeof(int64_t));
 
     while (!is_empty_q(q)) {
         // Get the first element from the queue
@@ -643,7 +666,7 @@ char* find_best_coordinator(PublData* data, const int64_t id_author) {
     int64_t min_id = INT64_MAX;
     float score = -1, new_score;
     char *answer = NULL;
-
+    int64_t copy_id = id_author;
     // initialise hashtable for bfs
     author = malloc(sizeof(struct Hashtable));
     DIE(author == NULL, "author malloc");
@@ -653,12 +676,12 @@ char* find_best_coordinator(PublData* data, const int64_t id_author) {
     q = malloc(sizeof(Queue));
     DIE(q == NULL, "queue malloc");
     init_q(q);
-    enqueue(q, &id_author);
+    enqueue(q, &copy_id);
 
     dist = malloc(sizeof(int));
     DIE(dist == NULL, "dist malloc");
     *dist = 0;
-    put(author, &id_author, dist, sizeof(int64_t));
+    put(author, &copy_id, dist, sizeof(int64_t));
 
     while (!is_empty_q(q)) {
         // Get the first element from the queue
