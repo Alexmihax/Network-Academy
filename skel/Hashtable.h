@@ -53,9 +53,23 @@ void init_ht(struct Hashtable *ht, int hmax);
 
 void put_id(struct Hashtable *ht, void *key, void *value, int key_size);
 
+void put_venue(struct Hashtable *ht, void *key, void *value, int key_size);
+
+void put_field(struct Hashtable *ht, void *key, void *value, int key_size);
+
+void put_authors(struct Hashtable *ht, void *key, void* value, int key_size);
+
+void put_citations(struct Hashtable *ht, void *key, void *value, int key_size);
+
 void* get(struct Hashtable *ht, const int64_t *key, int key_size);
 
-int has_key(struct Hashtable *ht, void *key);
+struct LinkedList* get_cit_list(struct Hashtable *ht, const int64_t* key);
+
+struct LinkedList* get_authors_list(struct Hashtable *ht, const int64_t* key);
+
+struct LinkedList* get_venue_list(struct Hashtable *ht, char* key);
+
+struct LinkedList* get_field_list(struct Hashtable *ht, char* key);
 
 void free_ht(struct Hashtable *ht);
 

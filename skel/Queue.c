@@ -1,3 +1,4 @@
+/* Copyright 2020 Pasca Mihai; Nicolae Diana*/
 #include <stdlib.h>
 #include <stdio.h>
 

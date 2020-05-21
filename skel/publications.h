@@ -11,6 +11,7 @@
 
 #define LMAX 300
 #define HMAX 3000
+#define MAXV 10000
 
 /**
  * If the assertion is true, the program is closed and the file and line number

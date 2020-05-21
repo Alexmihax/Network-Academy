@@ -21,7 +21,6 @@ void init_list(struct LinkedList *list) {
  * pe pozitia n=0). Daca n >= nr_noduri, noul nod se adauga la finalul listei.
  */
 void add_nth_node(struct LinkedList *list, int n, void *new_data) {
-    struct Node *prev, *curr;
     struct Node *new_node;
 
     new_node = (struct Node*)malloc(sizeof(struct Node));
@@ -116,7 +115,7 @@ void free_list(struct LinkedList **pp_list) {
         return;
     }
 
-    while(get_size(*pp_list) > 0) {
+    while (get_size(*pp_list) > 0) {
         currNode = remove_nth_node(*pp_list, 0);
         free(currNode);
     }

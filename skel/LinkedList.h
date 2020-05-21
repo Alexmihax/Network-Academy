@@ -4,7 +4,7 @@
 #define __LINKEDLIST_H__
 
 struct Node {
-    void *data; /* Pentru ca datele stocate sa poata avea orice tip, folosim un pointer la void. */
+    void *data;
     struct Node *next;
 };
 
