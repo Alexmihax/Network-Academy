@@ -27,6 +27,37 @@ este extrasa din hashtable-ul citations, si va incrementa numarul de paper-uri i
 principala prin intermediul unui parametru. Atunci cand distanta a fost atinsa, recursivitatea se opreste, parcurgerea 
 fiind terminata.
 
-task 4: get_erdors_distance
+task 4: get_erdos_distance
+Functia returneaza distanta intre doi autori. Se foloseste o coada pentru parcurgerea bfs a grafului autorilor si un 
+hashtable in care se retine distanta pana la un autor, si se foloseste si pentru conditia de vizitare, fiind neinitializata
+pozitia la inceput. Atunci cand se calculeaza distanta pana la autorul dorit, aceasta este returnata, iar functia este oprita. 
 
 task 5: get_most_cited_papers_by_field
+Functia returneaza cele mai citate articole dintr-un field. Se preia lista pentru respectivul field din hashtable-ul field
+si se parcurge, adaugand numarul de citari obtinut din hashtable-ul citations pentru fiecare paper intr-un vector, iar 
+numele acestora in altul. In final se sorteaza vectorul cu numarul de citari pentru fiecare articol.
+
+task 6: get_number_between_dates
+Functia returneaza numarul de articole dintre doi ani. In add_paper se incrementeaza un vector de frecventa pentru anul
+fiecarui articol, iar in functie se aduna valorile pentru fiecare an dintre cei doi. 
+
+task 7: get_number_of_authors_with_field
+Functia returneaza numarul de autori dintr-un field. Se extrage lista cu toate paper-urile din hashtable-ul field si se 
+parcurg toate, incrementand variabila "nr" de fiecare data cand se gaseste un autor nou. In vectorul visited se retin 
+toti autorii parcursi.
+
+task 8: get_histogram_of_citations
+Functia returneaza histograma cu citarile articolelor pentru fiecare autor. Se extrage din hashtable-ul autorilor lista
+cu toate articolele acestuia. Se extrage din hashtable-ul citations lista cu acestea, si se foloseste size-ul listei
+pentru numarul de citari, incredmentand pozitia aferenta in
+
+task 9: get_reading_order
+Functia returneaza ordinea de citire a articolelor. Se parcurg cu bfs articolele folosind o coada si se introduc intr-un 
+heap pentru a le sorta dupa criteriile din certinta. Apoi se extrag articolele din heap cu pop_heap si se introduc in
+vectorul de siruri de caractere care reprezinta raspunsul functiei. 
+
+task 10: find_best_coordinator
+Functia returneaza autorul cu scorul cel mai bun (calculat cu formula din cerinta). Se parcurge cu bfs folosind o coada,
+graful autorilor fara a depasi distanta data. Se retine scorul maxim, id-ul minim si distanta erdos minima, pentru a fi
+comparate de fiecare data cand se gaseste un nou coordonator. In final se returneaza numele coordonatorului cel mai bun,
+dupa criteriile date in cerinta. 
